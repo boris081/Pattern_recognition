@@ -59,13 +59,10 @@ class UploadActivity : AppCompatActivity() {
     fun uploadAIserver(bmp:Bitmap) {
         if (bmp != NULL) { //取得圖檔的路徑位置
             try {
-//            val uri: Uri? = UploadActivity?.data
-//                val file = tofile().getFilePathByUri(this, uri!!).toString()
                 var file =  getExternalFilesDir(Environment.DIRECTORY_PICTURES)
                 file = File(file , "image1.jpg")
                 val body= MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
-//                    .addFormDataPart("file", "image1.jpg",File(file)).build()
                     .addFormDataPart("file", "image1.jpg", file.asRequestBody(null)).build()
                 val request= Request.Builder()
                     .url("http://584193cf.ngrok.io/test/")
@@ -89,39 +86,6 @@ class UploadActivity : AppCompatActivity() {
             }
         }
     }
-
-//        override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-//        if (resultCode == Activity.RESULT_OK) { //取得圖檔的路徑位置
-//            val uri: Uri? = data?.data
-//            val file= tofile().getFilePathByUri(this, uri!!).toString()
-//            try {
-//
-//                val body= MultipartBody.Builder()
-//                    .setType(MultipartBody.FORM)
-//                    .addFormDataPart("file", "image1.jpg", File(file).asRequestBody(null)).build()
-//                val request= Request.Builder()
-//                    .url("http://ef111768.ngrok.io/test/")
-//                    .post(body)
-//                    .build()
-//                val call= OkHttpClient().newBuilder().build().newCall(request)
-//                call.enqueue(object : Callback {
-//                    override fun onFailure(call: Call, e: IOException) {
-//                        Log.d("get ", e.toString())
-//                    }
-//                    override fun onResponse(call: Call, response: Response) {
-//                        val res= JSONObject(response.body!!.string())
-//                        runOnUiThread{
-//                            DownloadImageTask(imageView).execute("http://ef111768.ngrok.io/output/image1.jpg")
-////                            textView2.text=res.getJSONObject("respond").getString("result")
-//                        }
-//                    }
-//                })
-//            } catch (e: FileNotFoundException) {
-//                Log.e("Exception", e.message.toString())
-//            }
-//        }
-//        super.onActivityResult(requestCode, resultCode, data)
-//    }
 
     class DownloadImageTask(private val bmImage: ImageView) : AsyncTask<String?, Void?, Bitmap?>() {
         override fun doInBackground(vararg params: String?): Bitmap? {

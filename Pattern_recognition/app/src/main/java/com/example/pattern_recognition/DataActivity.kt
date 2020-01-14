@@ -16,7 +16,7 @@ class DataActivity : AppCompatActivity() {
         Thread(Runnable {
             val con = MysqlCon()
             con.run()
-            val data = con.getData()
+                val data = con.getData()
             Log.v("OK", data)
             mysqlTextview.post(Runnable { mysqlTextview.setText(data) })
         }).start()
