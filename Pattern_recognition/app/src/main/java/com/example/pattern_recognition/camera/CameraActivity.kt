@@ -1,7 +1,6 @@
 package com.example.pattern_recognition.camera
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -11,17 +10,15 @@ import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.*
 import android.view.SurfaceHolder
-import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.graphics.drawable.toBitmap
-import androidx.fragment.app.Fragment
 import com.example.pattern_recognition.R
 import com.example.pattern_recognition.UploadActivity
 import kotlinx.android.synthetic.main.activity_camera.*
 import java.util.*
+
 
 class CameraActivity : AppCompatActivity() {
 
@@ -32,6 +29,9 @@ class CameraActivity : AppCompatActivity() {
     private var mCameraDevice: CameraDevice? = null
     private var mCameraCaptureSession: CameraCaptureSession? = null
 
+    private var imageViewData: ByteArray? = null
+
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)
@@ -40,11 +40,8 @@ class CameraActivity : AppCompatActivity() {
         picButton.setOnClickListener({ takePicture() })
 
         uploadButton.setOnClickListener {
-            val intent = Intent()
-            var bundle = Bundle()
-            bundle.putByte("cameraImage",imageView.drawable.)
-            intent.putExtra("Image",bundle)
-            intent.setClass(this,UploadActivity::class.java)
+            val intent = Intent(this,UploadActivity::class.java)
+            intent.putExtra("BitmapImage", imageViewData)
             startActivity(intent)
         }
     }
@@ -90,6 +87,7 @@ class CameraActivity : AppCompatActivity() {
             val bytes = ByteArray(buffer.remaining())
             buffer[bytes] //緩衝區寫入字組
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            imageViewData = bytes
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap) //圖片顯示到imageview
 
@@ -108,7 +106,6 @@ class CameraActivity : AppCompatActivity() {
                 return
             }
             //偵測camera ID
-//            findCameraId()
             val cameraNumber = mCameraManager.cameraIdList
             if (cameraNumber.size > 2) {
                 mCameraManager.openCamera("1", stateCallback, mainHandler)
@@ -219,15 +216,6 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-//    @SuppressLint("MissingPermission")
-//    fun findCameraId() {
-//        val cameraNumber = mCameraManager.cameraIdList
-//        if (cameraNumber.size > 2) {
-//            mCameraManager.openCamera("1", stateCallback, mainHandler)
-//        } else {
-//            mCameraManager.openCamera("0", stateCallback, mainHandler)
-//        }
-//    }
 }
 
 

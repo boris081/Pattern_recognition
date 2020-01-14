@@ -18,7 +18,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning">
-        <activity android:name=".UploadActivity"></activity>
+        <activity android:name=".UploadActivity" />
         <activity android:name=".camera.CameraActivity" />
         <activity android:name=".DataActivity" />
         <activity android:name=".MainActivity">
