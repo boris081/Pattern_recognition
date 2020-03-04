@@ -1,7 +1,9 @@
 package com.example.pattern_recognition.camera
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
@@ -9,14 +11,20 @@ import android.graphics.ImageFormat
 import android.hardware.camera2.*
 import android.media.ImageReader
 import android.os.*
+import android.view.LayoutInflater
 import android.view.SurfaceHolder
+import android.view.View
+import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.pattern_recognition.R
 import com.example.pattern_recognition.UploadActivity
 import kotlinx.android.synthetic.main.activity_camera.*
+import kotlinx.android.synthetic.main.data_dialog.*
+import kotlinx.android.synthetic.main.data_dialog.view.*
 import java.util.*
 
 
@@ -31,6 +39,7 @@ class CameraActivity : AppCompatActivity() {
 
     private var imageViewData: ByteArray? = null
 
+    @SuppressLint("InflateParams")
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,9 +49,20 @@ class CameraActivity : AppCompatActivity() {
         picButton.setOnClickListener({ takePicture() })
 
         uploadButton.setOnClickListener {
-            val intent = Intent(this,UploadActivity::class.java)
-            intent.putExtra("BitmapImage", imageViewData)
-            startActivity(intent)
+            val inflater = LayoutInflater.from(this)
+            val dialogView: View = inflater.inflate(R.layout.data_dialog, null)
+            AlertDialog.Builder(this)
+                .setTitle("填入以下資料")
+                .setView(dialogView)
+                .setPositiveButton("確定"){ _: DialogInterface, _: Int ->
+                    val intent = Intent(this,UploadActivity::class.java)
+                    intent.putExtra("BitmapImage", imageViewData)
+                    intent.putExtra("User_ID", dialogView.editText_ID.text.toString())
+                    startActivity(intent)
+                }
+                .show()
+
+
         }
     }
 
@@ -79,7 +99,7 @@ class CameraActivity : AppCompatActivity() {
         handlerThread.start()
         childHandler = Handler(handlerThread.looper)
         mainHandler = Handler(Looper.getMainLooper())
-        mImageReader = ImageReader.newInstance(800, 450, ImageFormat.JPEG, 1)
+        mImageReader = ImageReader.newInstance(800, 600, ImageFormat.JPEG, 1)
         mImageReader?.setOnImageAvailableListener({ reader: ImageReader ->
             // 拿到拍照照片數據
             val image = reader.acquireLatestImage()

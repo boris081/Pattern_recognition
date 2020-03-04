@@ -9,17 +9,17 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
+import android.telecom.Call
 import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_upload.*
 import okhttp3.*
+import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONObject
 import java.io.*
 import java.net.URL
-import okhttp3.RequestBody
-import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONObject.NULL
 
 
@@ -31,9 +31,10 @@ class UploadActivity : AppCompatActivity() {
         setContentView(R.layout.activity_upload)
 
         val bmp = intent.getByteArrayExtra("BitmapImage")
+        val userID = intent.getStringExtra("User_ID")
         val bitmap = BitmapFactory.decodeByteArray(bmp, 0, bmp.size)
         val uri = BitmaptoFile(bitmap)
-        Toast.makeText(this, uri.toString(), 1).show()
+        Toast.makeText(this, userID, 1).show()
         uploadAIserver(bitmap);
     }
 
@@ -65,18 +66,18 @@ class UploadActivity : AppCompatActivity() {
                     .setType(MultipartBody.FORM)
                     .addFormDataPart("file", "image1.jpg", file.asRequestBody(null)).build()
                 val request= Request.Builder()
-                    .url("http://584193cf.ngrok.io/test/")
+                    .url("http://5accc5ce.ngrok.io/test/")
                     .post(body)
                     .build()
                 val call= OkHttpClient().newBuilder().build().newCall(request)
                 call.enqueue(object : Callback {
-                    override fun onFailure(call: Call, e: IOException) {
+                    override fun onFailure(call: okhttp3.Call, e: IOException) {
                         Log.d("get ", e.toString())
                     }
-                    override fun onResponse(call: Call, response: Response) {
+                    override fun onResponse(call: okhttp3.Call, response: Response) {
                         val res= JSONObject(response.body!!.string())
                         runOnUiThread{
-                            DownloadImageTask(imageView).execute("http://584193cf.ngrok.io/output/image1.jpg")
+                            DownloadImageTask(imageView).execute("http://5accc5ce.ngrok.io/output/image1.jpg")
                             textView.text=res.getJSONObject("respond").getString("result")
                         }
                     }

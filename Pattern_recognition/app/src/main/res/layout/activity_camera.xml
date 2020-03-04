@@ -21,8 +21,8 @@
 
     <SurfaceView
         android:id="@+id/surfaceView"
-        android:layout_width="800dp"
-        android:layout_height="450dp"
+        android:layout_width="768dp"
+        android:layout_height="432dp"
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -34,8 +34,8 @@
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="800dp"
-        android:layout_height="450dp"
+        android:layout_width="768dp"
+        android:layout_height="432dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
