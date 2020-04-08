@@ -1,16 +1,14 @@
 package com.example.pattern_recognition
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
-import android.telecom.Call
 import android.util.Log
+import android.view.KeyEvent
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -18,9 +16,9 @@ import kotlinx.android.synthetic.main.activity_upload.*
 import okhttp3.*
 import okhttp3.RequestBody.Companion.asRequestBody
 import org.json.JSONObject
+import org.json.JSONObject.NULL
 import java.io.*
 import java.net.URL
-import org.json.JSONObject.NULL
 
 
 class UploadActivity : AppCompatActivity() {
@@ -33,15 +31,15 @@ class UploadActivity : AppCompatActivity() {
         val bmp = intent.getByteArrayExtra("BitmapImage")
         val userID = intent.getStringExtra("User_ID")
         val bitmap = BitmapFactory.decodeByteArray(bmp, 0, bmp.size)
-        val uri = BitmaptoFile(bitmap)
+        val uri = BitmaptoFile(bitmap,userID)
         Toast.makeText(this, userID, 1).show()
-        uploadAIserver(bitmap);
+        uploadAIserver(bitmap,userID);
     }
 
-    fun BitmaptoFile(bmp: Bitmap): Uri {
+    fun BitmaptoFile(bmp: Bitmap, userID:String): Uri {
 //        var file =  "/storage/emulated/0/Images"
         var file =  getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        file = File(file , "image1.jpg")
+        file = File(file , userID + ".jpg")
 
         try {
             // Compress the bitmap and save in jpg format
@@ -57,28 +55,32 @@ class UploadActivity : AppCompatActivity() {
         return Uri.parse(file.toString())
     }
 
-    fun uploadAIserver(bmp:Bitmap) {
+    fun uploadAIserver(bmp: Bitmap , userID:String) {
         if (bmp != NULL) { //取得圖檔的路徑位置
             try {
                 var file =  getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-                file = File(file , "image1.jpg")
+                file = File(file , userID + ".jpg")
                 val body= MultipartBody.Builder()
                     .setType(MultipartBody.FORM)
-                    .addFormDataPart("file", "image1.jpg", file.asRequestBody(null)).build()
+                    .addFormDataPart("file", userID + ".jpg", file.asRequestBody(null)).build()
                 val request= Request.Builder()
-                    .url("http://5accc5ce.ngrok.io/test/")
+                    .url("http://766b6415.ngrok.io/test/")
                     .post(body)
                     .build()
                 val call= OkHttpClient().newBuilder().build().newCall(request)
                 call.enqueue(object : Callback {
                     override fun onFailure(call: okhttp3.Call, e: IOException) {
-                        Log.d("get ", e.toString())
+                        Log.d("geterror: ", e.toString())
                     }
                     override fun onResponse(call: okhttp3.Call, response: Response) {
-                        val res= JSONObject(response.body!!.string())
-                        runOnUiThread{
-                            DownloadImageTask(imageView).execute("http://5accc5ce.ngrok.io/output/image1.jpg")
-                            textView.text=res.getJSONObject("respond").getString("result")
+                        try {
+                            val res= JSONObject(response.body!!.string())
+                            runOnUiThread{
+//                                DownloadImageTask(imageView).execute("http://766b6415.ngrok.io/output/"+ userID + ".jpg")
+                                textView.text=res.getJSONObject("respond").getString("result")
+                            }
+                        }catch (e: RuntimeException){
+                            Log.e("Exception", e.message.toString())
                         }
                     }
                 })
@@ -106,7 +108,9 @@ class UploadActivity : AppCompatActivity() {
             bmImage.setImageBitmap(result)
         }
     }
+
 }
+
 
 
 

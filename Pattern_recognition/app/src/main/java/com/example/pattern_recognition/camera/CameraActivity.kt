@@ -9,9 +9,13 @@ import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
+import android.hardware.camera2.CameraCharacteristics.SENSOR_ORIENTATION
 import android.media.ImageReader
 import android.os.*
 import android.view.LayoutInflater
+import android.view.Surface
+import android.view.Surface.ROTATION_180
+import android.view.Surface.ROTATION_90
 import android.view.SurfaceHolder
 import android.view.View
 import android.widget.EditText
@@ -26,11 +30,12 @@ import kotlinx.android.synthetic.main.activity_camera.*
 import kotlinx.android.synthetic.main.data_dialog.*
 import kotlinx.android.synthetic.main.data_dialog.view.*
 import java.util.*
+import kotlin.concurrent.schedule
 
 
 class CameraActivity : AppCompatActivity() {
 
-    private var mainHandler : Handler? = null
+    private var mainHandler: Handler? = null
     private var childHandler: Handler? = null
     private var mImageReader: ImageReader? = null
     private var mSurfaceHolder: SurfaceHolder? = null
@@ -46,7 +51,22 @@ class CameraActivity : AppCompatActivity() {
         setContentView(R.layout.activity_camera)
         surfaceInit()
 
-        picButton.setOnClickListener({ takePicture() })
+        picButton.setOnClickListener({
+            Handler().postDelayed({
+                takePicture()
+            },5000)
+
+            val timer = object: CountDownTimer(5*1000, 1000) {
+                override fun onTick(millisUntilFinished: Long) {
+                    textTimer.text = (millisUntilFinished/1000).toString() +"秒"
+                }
+
+                override fun onFinish() {
+                    textTimer.text = "OK"
+                }
+            }
+            timer.start()
+        })
 
         uploadButton.setOnClickListener {
             val inflater = LayoutInflater.from(this)
@@ -54,8 +74,8 @@ class CameraActivity : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle("填入以下資料")
                 .setView(dialogView)
-                .setPositiveButton("確定"){ _: DialogInterface, _: Int ->
-                    val intent = Intent(this,UploadActivity::class.java)
+                .setPositiveButton("確定") { _: DialogInterface, _: Int ->
+                    val intent = Intent(this, UploadActivity::class.java)
                     intent.putExtra("BitmapImage", imageViewData)
                     intent.putExtra("User_ID", dialogView.editText_ID.text.toString())
                     startActivity(intent)
@@ -99,7 +119,7 @@ class CameraActivity : AppCompatActivity() {
         handlerThread.start()
         childHandler = Handler(handlerThread.looper)
         mainHandler = Handler(Looper.getMainLooper())
-        mImageReader = ImageReader.newInstance(800, 600, ImageFormat.JPEG, 1)
+        mImageReader = ImageReader.newInstance(768, 432, ImageFormat.JPEG, 1)
         mImageReader?.setOnImageAvailableListener({ reader: ImageReader ->
             // 拿到拍照照片數據
             val image = reader.acquireLatestImage()
@@ -224,11 +244,13 @@ class CameraActivity : AppCompatActivity() {
                 CaptureRequest.CONTROL_AE_MODE_ON_AUTO_FLASH
             )
             // 獲取手機方向
-            val rotation =
-                this@CameraActivity.windowManager.defaultDisplay.rotation
+//            val rotation =
+//                this@CameraActivity.windowManager.defaultDisplay.rotation
             // 調整拍照方向
-//            captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, ORIENTATIONS.get(rotation));
-//拍照
+//            val SENSOR_ORIENTATION  = 270
+//            captureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, SENSOR_ORIENTATION)
+//            captureRequestBuilder.set
+            //拍照
             val mCaptureRequest = captureRequestBuilder.build()
             mCameraCaptureSession!!.capture(mCaptureRequest, null, childHandler)
         } catch (e: CameraAccessException) {
@@ -236,6 +258,25 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
+    private fun areDimensionsSwapped(displayRotation: Int, cameraCharacteristics: CameraCharacteristics): Boolean {
+        var swappedDimensions = false
+        when (displayRotation) {
+            Surface.ROTATION_0, Surface.ROTATION_180 -> {
+                if (cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) == 90 || cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) == 270) {
+                    swappedDimensions = true
+                }
+            }
+            Surface.ROTATION_90, Surface.ROTATION_270 -> {
+                if (cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) == 0 || cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION) == 180) {
+                    swappedDimensions = true
+                }
+            }
+            else -> {
+                // invalid display rotation
+            }
+        }
+        return swappedDimensions
+    }
 }
 
 
